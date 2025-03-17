@@ -1,33 +1,28 @@
 from fastapi import HTTPException, Request
 import jwt
-from app.message_broker import MessageBroker
-from app.repositories.user import UserRepository
-from app.services.login import LoginService
-from app.services.registration import RegistrationService
+from app.repositories.team import TeamRepository
 from app.database import get_async_session
-from app.services.user import UserService
-from config import config, RABBIT_CONN
+from app.repositories.team_memebership import TeamMembershipRepository
+from app.services.consumer import ConsumerService
+from app.services.team import TeamService
+from config import config
 
 
-def get_message_broker() -> MessageBroker:
-    return MessageBroker(RABBIT_CONN)
+def get_team_membership_repository() ->TeamMembershipRepository:
+    return TeamMembershipRepository(session=get_async_session())
 
-def get_user_repository() -> UserRepository:
-    return UserRepository(session=get_async_session())
+def get_team_repository() ->TeamRepository:
+    return TeamRepository(session=get_async_session())
 
-def get_registration_service() -> RegistrationService:
-    return RegistrationService(repository=get_user_repository(), message_broker=get_message_broker())
+def get_team_service() -> TeamService:
+    return TeamService(repository=get_team_repository())
 
-def get_login_service() -> LoginService:
-    return LoginService(repository=get_user_repository())
-
-def get_user_service() -> UserService:
-    return UserService(repository=get_user_repository())
-
+def get_consumer_service() -> ConsumerService:
+    return ConsumerService(team_membership_repository=get_team_membership_repository(), team_repository=get_team_repository())
 
 
 
-def get_current_user(request: Request):
+def get_current_user_id(request: Request):
     token = request.cookies.get(config.JWT_ACCESS_COOKIE_NAME)
     if not token:
         raise HTTPException(status_code=401, detail="Token not found")

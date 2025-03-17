@@ -10,7 +10,7 @@ DB_USER = os.getenv("DB_USER")
 DB_PASS = os.getenv("DB_PASS") 
 DB_PORT = os.getenv("DB_PORT") 
 
-RABBIT_CONN = os.getenv("RABBIT_CONN") 
+RABBIT_CONN = "amqp://user:password@localhost/"
 
 config = AuthXConfig()
 

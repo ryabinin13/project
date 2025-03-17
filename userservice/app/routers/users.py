@@ -1,3 +1,4 @@
+from aio_pika import Message
 from app.services.user import UserService
 from config import config
 from fastapi import APIRouter, Request, Response
@@ -9,6 +10,7 @@ from app.services.login import LoginService
 from app.services.registration import RegistrationService
 
 
+
 user_router = APIRouter()
 
 @user_router.post("/register")
@@ -16,7 +18,10 @@ async def registration(
     user_registration_schema: UserRegistrationSchema,
     registration_service: Annotated[RegistrationService, Depends(get_registration_service)]
     ):
-    return await registration_service.registration(user_registration_schema)
+    id = await registration_service.registration(user_registration_schema)
+    
+
+    return id
 
 
 @user_router.post("/login")
@@ -52,3 +57,5 @@ async def delete(
     current_user_id: int = Depends(get_current_user)
     ):
     return await user_service.user_delete(current_user_id)
+
+

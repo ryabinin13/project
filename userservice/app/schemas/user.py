@@ -8,6 +8,7 @@ class UserRegistrationSchema(BaseModel):
     email: str
     password1: str = Field(min_length=6)
     password2: str = Field(min_length=6)
+    team_id: str
 
     @model_validator(mode='after')
     def check_password(self)-> Self:
