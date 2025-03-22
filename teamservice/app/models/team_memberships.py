@@ -8,5 +8,6 @@ class TeamMemberships(Base):
     
     __tablename__ = "team_memberships"
 
-    team_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
-    user_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    team_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True))
+    user_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True))

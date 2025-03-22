@@ -7,10 +7,9 @@ from datetime import date
 import uuid
 
 
-class Task(Base):
-    __tablename__ = "tasks"
+class Mark(Base):
+    __tablename__ = "marks"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
-    user_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=True)
-    discription: Mapped[str]
-    title: Mapped[str]
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    task_id: Mapped[uuid.UUID]
+    user_id: Mapped[uuid.UUID]

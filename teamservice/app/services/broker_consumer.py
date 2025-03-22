@@ -4,7 +4,7 @@ from app.repositories.team_memebership import TeamMembershipRepository
 from aio_pika.abc import AbstractIncomingMessage
 
 
-class ConsumerService:
+class BrokerConsumerService:
     def __init__(self, team_membership_repository: TeamMembershipRepository, team_repository: TeamRepository):
         self.team_membership_repository = team_membership_repository
         self.team_repository = team_repository

@@ -1,4 +1,3 @@
-from app.message_broker import MessageBroker
 from app.repositories.user import UserRepository
 from app.schemas.user import UserRegistrationSchema
 from werkzeug.security import generate_password_hash
@@ -7,9 +6,9 @@ from exeptions import UserAlreadyHasEmailException
 
 class RegistrationService:
 
-    def __init__(self, repository: UserRepository, message_broker: MessageBroker):
+    def __init__(self, repository: UserRepository, app_state):
         self.user_repository = repository
-        self.message_broker = message_broker
+        self.app_state = app_state
 
 
     async def registration(self, user_registration_schema: UserRegistrationSchema):
@@ -23,5 +22,7 @@ class RegistrationService:
         user_dict["password_hash"] = password_hash
 
         id = await self.user_repository.create(user_dict)
-        await self.message_broker.publish_user_registered(str(id) + " " + team_id)
+        
+        if team_id:
+            await self.app_state.broker_producer_service.publish_user_data_to_team(str(id) + " " + team_id)
         return id
