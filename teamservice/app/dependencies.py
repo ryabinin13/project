@@ -18,11 +18,12 @@ def get_team_repository() ->TeamRepository:
 def get_team_service() -> TeamService:
     from app.main import app
 
-    return TeamService(repository=get_team_repository(), app_state=app.state)
+    return TeamService(team_repository=get_team_repository(), team_memberships_repository=get_team_membership_repository(), app_state=app.state)
 
 def get_broker_consumer_service() -> BrokerConsumerService:
-    return BrokerConsumerService(team_membership_repository=get_team_membership_repository(), team_repository=get_team_repository())
+    from app.main import app
 
+    return BrokerConsumerService(team_membership_repository=get_team_membership_repository(), team_repository=get_team_repository(), app_state=app.state)
 
 
 def get_current_user_id(request: Request):

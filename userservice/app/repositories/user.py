@@ -23,14 +23,20 @@ class UserRepository:
             user = result.scalar_one_or_none()
             return user
 
-    async def get_id(self, id: int):
+    async def get_id(self, id):
         async with self.session as db:
             query = select(User).where(User.id == id)
             result = await db.execute(query)
             user = result.scalar_one_or_none()
             return user
         
-    async def delete(self, id: int) -> None:
+    async def change_active(self, user: User, active: bool):
+        async with self.session as db:
+            user.is_active = active
+            db.add(user)
+            await db.commit()
+        
+    async def delete(self, id) -> None:
         async with self.session as db:
             query = delete(User).where(User.id == id)
             await db.execute(query)

@@ -1,1 +1,1 @@
-from app.models import team, team_memberships
+from .models import team, team_memberships

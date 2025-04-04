@@ -12,3 +12,7 @@ class UserNotCorrectPasswordException(Exception):
 
 class UserAlreadyLoggedException(Exception):
     detail = "User is already logged in"
+
+
+class UserAccountDeleted(Exception):
+    detail = "Account is deleted"

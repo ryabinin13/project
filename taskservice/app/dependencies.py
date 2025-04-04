@@ -1,5 +1,6 @@
 from fastapi import HTTPException, Request
 import jwt
+from app.repositories.comment import CommentRepository
 from app.repositories.task import TaskRepository
 from app.services.task import TaskService
 from app.database import get_async_session
@@ -10,14 +11,19 @@ from app.services.broker_consumer import BrokerConsumerService
 def get_task_repository():
     return TaskRepository(session=get_async_session())
 
+def get_comment_repository():
+    return CommentRepository(session=get_async_session())
+
 
 def get_task_service() -> TaskService:
     from app.main import app
 
-    return TaskService(repository=get_task_repository(), app_state=app.state)
+    return TaskService(task_repository=get_task_repository(), comment_repository=get_comment_repository(), app_state=app.state)
 
 def get_broker_consumer_service() -> BrokerConsumerService:
-    return BrokerConsumerService(task_repository=get_task_repository())
+    from app.main import app
+
+    return BrokerConsumerService(task_repository=get_task_repository(), app_state=app.state)
 
 
 def get_current_user_id(request: Request):

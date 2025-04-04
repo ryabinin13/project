@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from app.models.task import Task
 
 
@@ -34,3 +34,12 @@ class TaskRepository:
             result = await db.execute(query)
             user = result.scalar_one_or_none()
             return user
+        
+
+    async def delete(self, id) -> None:
+        async with self.session as db:
+            query = delete(Task).where(Task.id == id)
+            await db.execute(query)
+            await db.commit()
+
+            return None

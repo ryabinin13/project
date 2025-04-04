@@ -13,3 +13,7 @@ class BrokerProducerService:
     async def publish_user_data_to_task(self, message):
         message = aio_pika.Message(body=message.encode())
         await self.channel.default_exchange.publish(message, routing_key="user_to_task")
+
+    async def publish_user_data_to_meeting(self, message):
+        message = aio_pika.Message(body=message.encode())
+        await self.channel.default_exchange.publish(message, routing_key="user_to_meeting")

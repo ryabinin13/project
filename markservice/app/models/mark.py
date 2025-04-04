@@ -10,6 +10,8 @@ import uuid
 class Mark(Base):
     __tablename__ = "marks"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
-    task_id: Mapped[uuid.UUID]
+    id: Mapped[int] = mapped_column(primary_key=True)
+    task_id: Mapped[int]
     user_id: Mapped[uuid.UUID]
+    mark: Mapped[int]
+    comment: Mapped[str] = mapped_column(nullable=True)

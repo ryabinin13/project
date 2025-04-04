@@ -1,7 +1,9 @@
+from fastapi import Request
 from app.repositories.user import UserRepository
 from app.schemas.user import UserRegistrationSchema
 from werkzeug.security import generate_password_hash
-from exeptions import UserAlreadyHasEmailException
+from exeptions import UserAlreadyHasEmailException, UserAlreadyLoggedException
+from config import config
 
 
 class RegistrationService:
@@ -11,10 +13,15 @@ class RegistrationService:
         self.app_state = app_state
 
 
-    async def registration(self, user_registration_schema: UserRegistrationSchema):
+    async def registration(self, user_registration_schema: UserRegistrationSchema, request: Request):
+
+        token = request.cookies.get(config.JWT_ACCESS_COOKIE_NAME)
+        if token:
+            raise UserAlreadyLoggedException
+
         user = await self.user_repository.get_email(email=user_registration_schema.email)
         if user:
-            return UserAlreadyHasEmailException
+            raise UserAlreadyHasEmailException
         
         team_id = user_registration_schema.team_id
         password_hash = generate_password_hash(user_registration_schema.password1)

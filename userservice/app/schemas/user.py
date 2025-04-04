@@ -1,11 +1,12 @@
 from typing import Optional, Self
-from pydantic import BaseModel, model_validator, Field
+from pydantic import BaseModel, model_validator, Field, EmailStr
+
 
 
 class UserRegistrationSchema(BaseModel):
 
     username: str = Field(min_length=3)
-    email: str
+    email: EmailStr
     password1: str = Field(min_length=6)
     password2: str = Field(min_length=6)
     team_id: str = Field(default=None)
@@ -19,10 +20,10 @@ class UserRegistrationSchema(BaseModel):
 
 class UserUpdateSchema(BaseModel):
     username: str = Field(default=None)
-    email: str = Field(default=None)
+    email: EmailStr = Field(default=None)
     password: str = Field(default=None)
 
 
 class UserLoginSchema(BaseModel):
-    email: str
+    email: EmailStr
     password: str
