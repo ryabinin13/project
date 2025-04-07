@@ -14,7 +14,7 @@ class BrokerConsumerService:
     async def team_membership_create(self, message: AbstractIncomingMessage):
         async with message.process():
             message_body = message.body.decode()
-            user_id, team_id = str(message_body).split()[-2:]
+            user_id, team_id = str(message_body).split()
             user_id = UUID(user_id)
             try:
                 team_id = UUID(team_id)
@@ -39,9 +39,21 @@ class BrokerConsumerService:
             try:
                 team_id = UUID(team_id)
             except:
-
                 return None
             team = await self.team_repository.get_id(team_id)
 
             if team:
                 await self.app_state.broker_producer_service.publish_message_to_org(str(team_id) + " " + str(name))
+
+    async def check_team_id_from_calendar(self, message: AbstractIncomingMessage):
+        async with message.process():
+            message = message.body.decode()
+            team_id, title, discription = str(message).split()
+            try:
+                team_id = UUID(team_id)
+            except:
+                return None
+            team = await self.team_repository.get_id(team_id)
+
+            if team:
+                await self.app_state.broker_producer_service.publish_message_to_calendar(str(team_id) + " " + str(title) + " " + str(discription))

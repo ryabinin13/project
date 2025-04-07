@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import select, delete
 from app.models.team_memberships import TeamMemberships
 
 
@@ -35,5 +35,13 @@ class TeamMembershipRepository:
             db.add(team_membership)
             await db.commit()
             await db.refresh(team_membership)
+
+            return None
+        
+    async def delete(self, id) -> None:
+        async with self.session as db:
+            query = delete(TeamMemberships).where(TeamMemberships.id == id)
+            await db.execute(query)
+            await db.commit()
 
             return None

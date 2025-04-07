@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends
 from app.dependencies import get_current_user_id, get_task_service
 from app.schemas.task import CreateTaskSchema, UpdateTaskSchema
 from app.services.task import TaskService
+from app.models.task import Status
 
 task_router = APIRouter()
 
@@ -48,6 +49,17 @@ async def delete_task(
 async def add_comment(
     task_id: int,
     text: str,
-    task_service: TaskService = Depends(get_task_service)
+    task_service: TaskService = Depends(get_task_service),
+    current_user_id: UUID = Depends(get_current_user_id)
     ):
     return await task_service.add_comment(task_id, text)
+
+
+@task_router.patch("/tasks/{task_id}")
+async def change_status(
+    task_id: int,
+    status: Status,
+    task_service: TaskService = Depends(get_task_service),
+    current_user_id: UUID = Depends(get_current_user_id)
+):
+    return await task_service.change_status(task_id, status)

@@ -1,3 +1,4 @@
+import select
 from app.models.organization import Organization
 
 
@@ -15,3 +16,10 @@ class OrganizationRepository:
             await db.commit() 
 
             return org.id
+        
+
+    async def get_id(self, id: int) -> Organization:
+        async with self.async_session as db:
+            query = select(Organization).where(Organization.id == int(id))
+            org = await db.execute(query)
+            return org.scalars().first()

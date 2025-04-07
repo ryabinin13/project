@@ -12,7 +12,6 @@ from exceptions import UserAlreadyHasTeamException
 team_router = APIRouter()
 
 
-
 @team_router.post("/teams")
 async def team_create(
     team_create_schema: TeamCreateSchema,
@@ -40,5 +39,16 @@ async def assign_status(
     team_id: uuid.UUID,
     user_id: uuid.UUID,
     user_change_status_schema: UserChangeStatusSchema,
+    team_service: TeamService = Depends(get_team_service),
+    current_user_id: UUID = Depends(get_current_user_id)
     ):
-    pass
+    return await team_service.change_status(team_id, user_id, user_change_status_schema)
+
+@team_router.delete("/teams/{team_id}/users/{user_id}")
+async def delete_user(
+    team_id: uuid.UUID,
+    user_id: uuid.UUID,
+    team_service: TeamService = Depends(get_team_service),
+    current_user_id: UUID = Depends(get_current_user_id)
+):
+    return await team_service.delete_user(team_id, user_id)

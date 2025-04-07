@@ -9,21 +9,21 @@ from aio_pika import connect, connect_robust
 from app.database import Base, async_engine
 from app.dependencies import get_broker_consumer_service
 from app.services.broker_producer import BrokerProducerService
+from config import RABBIT_CONN
 
 
 async def connect_to_rabbitmq():
-    for attempt in range(40):  # Увеличил количество попыток
+    for attempt in range(20): 
         try:
-            rabbitmq_host = os.environ.get("RABBITMQ_HOST", "localhost")
-            connection = await connect_robust(
-                f"amqp://user:password@{rabbitmq_host}/", timeout=5  # Добавил timeout
+            connection = await aio_pika.connect_robust(
+                RABBIT_CONN, timeout=5
             )
             print("Connected to RabbitMQ!")
             return connection
-        except aio_pika.exceptions.AMQPError as e:  # Ловим специфичные исключения aio_pika
+        except aio_pika.exceptions.AMQPError as e:
             print(f"Attempt {attempt+1} failed (AMQPError): {e}")
-            await asyncio.sleep(2)  # Ждем перед следующей попыткой
-        except Exception as e:  # Ловим другие исключения
+            await asyncio.sleep(2) 
+        except Exception as e:  
             print(f"Attempt {attempt+1} failed (General Error): {e}")
             await asyncio.sleep(2)
 
@@ -49,6 +49,9 @@ async def lifespan(app: FastAPI):
     app.queue_to_org = await app.channel.declare_queue("team_to_organization", durable=True)
     app.queue_from_org = await app.channel.declare_queue("team_from_organization", durable=True)
 
+    app.queue_from_calendar = await app.channel.declare_queue("team_from_calendar", durable=True)
+    app.queue_to_calendar = await app.channel.declare_queue("team_to_calendar", durable=True)
+
     app.state.broker_producer_service = BrokerProducerService(app.channel)
 
     async def consume_user_messages():
@@ -57,8 +60,12 @@ async def lifespan(app: FastAPI):
     async def consume_org_messages():
         await app.queue_from_org.consume(get_broker_consumer_service().check_team_id_from_org)
 
+    async def consume_calendar_messages():
+        await app.queue_from_calendar.consume(get_broker_consumer_service().check_team_id_from_calendar)
+
     consumer_user_task = asyncio.create_task(consume_user_messages())
     consumer_org_task = asyncio.create_task(consume_org_messages())
+    consumer_calendar_task = asyncio.create_task(consume_calendar_messages())
 
     yield
 

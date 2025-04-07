@@ -22,3 +22,18 @@ class BrokerConsumerService:
         
 
         await message.ack()
+
+
+    async def org_membership_create(self, message: AbstractIncomingMessage):
+        message_body = message.body.decode()
+        org_id, user_id = str(message_body).split()
+        try:
+            user_id = UUID(user_id)
+        except:
+            return None
+        
+        data = {"id": org_id, "user_id": user_id}
+        await self.organization_membership_repository.create(data)
+        
+
+        await message.ack()

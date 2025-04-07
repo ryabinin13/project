@@ -39,3 +39,10 @@ class TaskService:
         date_comm = datetime.now()
         data_comment = {"task_id": task_id, "date": date_comm, "text": text}
         return await self.comment_repository.create(data_comment)
+    
+    async def change_status(self, task_id, status):
+        task = await self.task_repository.get_id(task_id)
+        if task:
+            data = {"status", status}
+
+            return await self.task_repository.update(task, data)

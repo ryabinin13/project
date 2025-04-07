@@ -40,3 +40,14 @@ class BrokerConsumerService:
             if user:
                 await self.app_state.broker_producer_service.publish_user_data_to_meeting(str(user.id) + " " + meeting_id)
             return None
+        
+    
+    async def check_email_from_org(self, message: AbstractIncomingMessage):
+        async with message.process():
+            message = message.body.decode()
+
+            org_id, email = str(message).split()
+            user = await self.user_repository.get_email(email=email)
+            if user:
+                await self.app_state.broker_producer_service.publish_user_data_to_org(str(user.id) + " " + str(org_id))
+            return None

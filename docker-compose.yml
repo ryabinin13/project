@@ -215,6 +215,40 @@ services:
       - meetingdb
       - rabbitmq
 
+
+  calendargdb:
+    container_name: calendar_db
+    image: postgres:15-alpine
+    volumes:
+      - calendardb_data:/var/lib/postgresql/data/
+    ports:  
+      - "5439:5432" 
+    # expose:
+    #   - 5432
+    environment:
+    
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=calendar_db
+
+  calendar:
+    container_name: calendar_service
+    build:
+      context: ./calendarservice
+      # dockerfile: Dockerfile
+    command: bash -c 'while !</dev/tcp/calendardb/5432; do sleep 2; done; uvicorn app.main:app --host 0.0.0.0 --port 8006'
+    volumes:
+      - ./calendarservice:/app
+    ports:
+      - 8005:8005
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://user:password@meetingdb:5432/calendar_db
+      - RABBITMQ_HOST=rabbitmq  
+
+    depends_on:
+      - calendardb
+      - rabbitmq
+
 volumes:
   userdb_data:
   teamdb_data:
@@ -222,5 +256,6 @@ volumes:
   organizationdb_data:
   markdb_data:
   meetingdb_data:
+  calendardb_data:
   rabbitmq_data:
     driver: local

@@ -14,18 +14,17 @@ from config import RABBIT_CONN
 
 
 async def connect_to_rabbitmq():
-    for attempt in range(40):  # Увеличил количество попыток
+    for attempt in range(20): 
         try:
-            rabbitmq_host = os.environ.get("RABBITMQ_HOST", "localhost")
             connection = await aio_pika.connect_robust(
-                f"amqp://user:password@{rabbitmq_host}/", timeout=5  # Добавил timeout
+                RABBIT_CONN, timeout=5
             )
             print("Connected to RabbitMQ!")
             return connection
-        except aio_pika.exceptions.AMQPError as e:  # Ловим специфичные исключения aio_pika
+        except aio_pika.exceptions.AMQPError as e:
             print(f"Attempt {attempt+1} failed (AMQPError): {e}")
-            await asyncio.sleep(2)  # Ждем перед следующей попыткой
-        except Exception as e:  # Ловим другие исключения
+            await asyncio.sleep(2) 
+        except Exception as e:  
             print(f"Attempt {attempt+1} failed (General Error): {e}")
             await asyncio.sleep(2)
 
@@ -34,16 +33,14 @@ async def connect_to_rabbitmq():
 @asynccontextmanager
 async def lifespan(app: FastAPI):
 
-    async with async_engine.begin() as conn: # используется асинхронный контекстный менеджер
+    async with async_engine.begin() as conn:
       await conn.run_sync(Base.metadata.create_all)
 
-    # try:
-    #     alembic_cfg = Config("alembic.ini")  # Укажите путь к вашей alembic.ini
-    #     command.upgrade(alembic_cfg, "head") # Применяем все миграции
-    # except Exception as e:
-    #     print(f"Ошибка при применении миграций: {e}")
-
-
+    try:
+        alembic_cfg = Config("alembic.ini")
+        command.upgrade(alembic_cfg, "head")
+    except Exception as e:
+        print(f"Ошибка при применении миграций: {e}")
 
     app.rabbit_connection = await connect_to_rabbitmq()
     app.channel = await app.rabbit_connection.channel()
@@ -57,8 +54,12 @@ async def lifespan(app: FastAPI):
     app.queue_to_task = await app.channel.declare_queue("user_to_task", durable=True)
     app.queue_from_task = await app.channel.declare_queue("user_email_from_task", durable=True)
 
+    # Очереди для общения с meeting service
     app.queue_to_meeting = await app.channel.declare_queue("user_to_meeting", durable=True)
     app.queue_from_meeting = await app.channel.declare_queue("user_email_from_meeting", durable=True)
+
+    app.queue_to_org = await app.channel.declare_queue("user_to_organization", durable=True)
+    app.queue_from_org = await app.channel.declare_queue("user_from_organization", durable=True)
 
     app.state.broker_producer_service = BrokerProducerService(app.channel)
     
@@ -71,9 +72,13 @@ async def lifespan(app: FastAPI):
     async def consume_meeting_messages():
         await app.queue_from_meeting.consume(get_broker_consumer_service().check_email_from_meeting)
 
+    async def consume_org_messages():
+        await app.queue_from_org.consume(get_broker_consumer_service().check_email_from_org)
+
     consumer_team_task = asyncio.create_task(consume_team_messages())
     consumer_task_task = asyncio.create_task(consume_task_messages())
     consumer_meeting_task = asyncio.create_task(consume_meeting_messages())
+    consumer_org_task = asyncio.create_task(consume_org_messages())
 
 
     yield

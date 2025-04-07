@@ -7,13 +7,15 @@ class BrokerProducerService:
         self.channel = channel
 
 
-    async def publish_message_to_user(self, task_id, email):
-        message_body = str(task_id) + " " + email
-        message = aio_pika.Message(body=message_body.encode())
+    async def publish_message_to_user(self, message):
+        message = aio_pika.Message(body=message.encode())
         await self.channel.default_exchange.publish(message, routing_key="user_email_from_team")
 
 
     async def publish_message_to_org(self, message):
-        message_body = str(message)
-        message = aio_pika.Message(body=message_body.encode())
+        message = aio_pika.Message(body=message.encode())
         await self.channel.default_exchange.publish(message, routing_key="team_to_organization")
+
+    async def publish_message_to_calendar(self, message):
+        message = aio_pika.Message(body=message.encode())
+        await self.channel.default_exchange.publish(message, routing_key="team_to_calendar")

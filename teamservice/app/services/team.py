@@ -7,8 +7,7 @@ from exceptions import UserAlreadyHasTeamException
 
 
 class TeamService:
-    
-    
+
     def __init__(self, team_repository: TeamRepository, team_memberships_repository: TeamMembershipRepository, app_state):
         self.team_repository = team_repository
         self.team_memberships_repository = team_memberships_repository
@@ -25,12 +24,10 @@ class TeamService:
         team_membership_dict = {"team_id": team_id, "user_id": user_id, "status": Status.ADMIN}
         await self.team_memberships_repository.create(team_membership_dict)
 
-
-
     async def add_user(self, team_id, email, current_user_id):
         team_member_current = await self.team_memberships_repository.get_user_id(current_user_id)
         if team_member_current.status == Status.ADMIN:
-            await self.app_state.broker_producer_service.publish_message_to_user(team_id, email)
+            await self.app_state.broker_producer_service.publish_message_to_user(str(team_id) +  " " + str(email))
 
 
     async def change_status(self, team_id, user_id, user_change_status_schema: UserChangeStatusSchema):
@@ -38,5 +35,15 @@ class TeamService:
         if team_membership.team_id != team_id:
             raise Exception
         
-        await self.team_memberships_repository.update(team_membership=team_membership, data=user_change_status_schema.model_dump())
+        return await self.team_memberships_repository.update(team_membership=team_membership, data=user_change_status_schema.model_dump())
+
+
+    async def delete_user(self, team_id, user_id):
+        team_membership = await self.team_memberships_repository.get_user_id(user_id=user_id)
+        if team_membership.team_id != team_id:
+            raise Exception
+
+        return await self.team_memberships_repository.delete(team_membership.id)
+
+        
         

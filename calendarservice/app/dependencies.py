@@ -1,7 +1,27 @@
 from fastapi import HTTPException, Request
 import jwt
+from app.repositories.calendar import CalendarRepository
+from app.services.broker_consumer import BrokerConsumerService
+from app.services.calendar import CalendarService
 from config import config
+from app.database import get_async_session
 
+
+def get_calendar_repository() ->CalendarRepository:
+
+    return CalendarRepository(session=get_async_session())
+
+
+def get_calendar_service() -> CalendarService:
+    from app.main import app
+
+    return CalendarService(caendar_repository=get_calendar_repository(), app_state=app.state)
+
+
+def get_broker_consumer_service() -> BrokerConsumerService:
+    from app.main import app
+
+    return BrokerConsumerService(calendar_repository=get_calendar_repository(), app_state=app.state)
 
 def get_current_user(request: Request):
     token = request.cookies.get(config.JWT_ACCESS_COOKIE_NAME)
