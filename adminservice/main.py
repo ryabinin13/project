@@ -10,7 +10,6 @@ from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine, Asyn
 from sqlalchemy.orm import declarative_base, sessionmaker
 
 
-
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
 userservice_path = os.path.abspath(os.path.join(current_dir, '..'))

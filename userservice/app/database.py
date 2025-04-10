@@ -13,3 +13,4 @@ get_async_session = async_sessionmaker(async_engine, autocommit=False, autoflush
 
 Base = declarative_base()
 
+
