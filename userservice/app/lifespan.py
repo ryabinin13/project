@@ -94,6 +94,7 @@ async def lifespan(app: FastAPI):
 
 
     yield
+    
 
 
     consumer_team_task.cancel()
